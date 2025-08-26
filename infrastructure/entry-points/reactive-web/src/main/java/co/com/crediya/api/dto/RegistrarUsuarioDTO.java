@@ -5,6 +5,7 @@ import co.com.crediya.model.usuario.Salary;
 import co.com.crediya.model.usuario.Usuario;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record RegistrarUsuarioDTO(
     String nombres,
@@ -14,7 +15,8 @@ public record RegistrarUsuarioDTO(
     String telefono,
     String correoElectronico,
     BigDecimal salarioBase,
-    String documentoIdentidad) {
+    String documentoIdentidad,
+    UUID idRol) {
 
   public Usuario toDomain() {
     return Usuario.builder()
@@ -26,10 +28,7 @@ public record RegistrarUsuarioDTO(
         .correoElectronico(new Email(correoElectronico))
         .salarioBase(new Salary(salarioBase))
         .documentoIdentidad(documentoIdentidad)
+        .idRol(idRol)
         .build();
   }
-
-  //  public Usuario toEntity(RegistrarUsuarioDTO dto) {
-  //    return Usuario.builder().correoElectronico().build();
-  //  }
 }

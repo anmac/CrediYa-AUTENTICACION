@@ -1,8 +1,12 @@
 package co.com.crediya.api;
 
 import co.com.crediya.api.dto.RegistrarUsuarioDTO;
-import co.com.crediya.usecase.usuario.RegistrarUsuarioUseCase;
+import co.com.crediya.api.dto.UsuarioResponseDTO;
+import co.com.crediya.usecase.usuario.UsuarioUseCase;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -13,52 +17,48 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class Handler {
 
-  private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
+  private final UsuarioUseCase usuarioUseCase;
 
-  public Mono<ServerResponse> listenGetUsuario(ServerRequest serverRequest) {
-    // useCase.logic();
-    return ServerResponse.ok().bodyValue("Sam Alderson");
+  private final Logger log = LoggerFactory.getLogger(Handler.class);
+
+  public Mono<ServerResponse> listenGetUsuarioById(ServerRequest serverRequest) {
+    String id = serverRequest.pathVariable("id");
+
+    return usuarioUseCase
+        .obtenerUsuario(UUID.fromString(id))
+        .flatMap(
+            usuario ->
+                ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(UsuarioResponseDTO.fromDomain(usuario)))
+        .switchIfEmpty(ServerResponse.notFound().build());
   }
 
   public Mono<ServerResponse> listenGetAllUsuarios(ServerRequest serverRequest) {
-    // useCase.logic();
-    return ServerResponse.ok().bodyValue("");
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+            usuarioUseCase.obtenerUsuarios().map(UsuarioResponseDTO::fromDomain),
+            UsuarioResponseDTO.class);
   }
 
   public Mono<ServerResponse> listenSaveUsuario(ServerRequest serverRequest) {
     return serverRequest
         .bodyToMono(RegistrarUsuarioDTO.class)
         .doOnError(Throwable::printStackTrace)
-        .flatMap(dto -> registrarUsuarioUseCase.registrar(dto.toDomain()))
+        .flatMap(dto -> usuarioUseCase.registrar(dto.toDomain()))
         .flatMap(
             usuarioRegistrado ->
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(usuarioRegistrado));
-
-    //    return serverRequest
-    //        .bodyToMono(String.class)
-    //        .doOnNext(body -> System.out.println("DEBUG >>> JSON recibido: " + body))
-    //        .doOnError(Throwable::printStackTrace)
-    //        .flatMap(
-    //            usuarioRegistrado ->
-    //                ServerResponse.ok()
-    //                    .contentType(MediaType.APPLICATION_JSON) // mejor JSON, no EVENT_STREAM
-    //                    .bodyValue(usuarioRegistrado));
-
-    //    return serverRequest
-    //        .bodyToMono(RegistrarUsuarioDTO.class)
-    //        .flatMap(dto -> registrarUsuarioUseCase.registrar(dto.toDomain()))
-    //        .flatMap(usuario -> ServerResponse.ok().bodyValue(usuario))
-    //        .onErrorResume(e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
+                    .bodyValue(UsuarioResponseDTO.fromDomain(usuarioRegistrado)));
   }
 
-  public Mono<ServerResponse> listenUpdateUsuario(ServerRequest serverRequest) {
-    // useCase.logic();
-    return ServerResponse.ok().bodyValue("");
-  }
-
-  public Mono<ServerResponse> listenSaveUsuarios(ServerRequest serverRequest) {
-    return ServerResponse.ok().bodyValue("");
-  }
+  //  public Mono<ServerResponse> listenUpdateUsuario(ServerRequest serverRequest) {
+  //    return ServerResponse.ok().bodyValue("");
+  //  }
+  //
+  //  public Mono<ServerResponse> listenSaveUsuarios(ServerRequest serverRequest) {
+  //    return ServerResponse.ok().bodyValue("");
+  //  }
 }
