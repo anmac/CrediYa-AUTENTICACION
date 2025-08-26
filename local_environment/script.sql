@@ -22,3 +22,10 @@ CREATE TABLE IF NOT EXISTS public.usuario (
   id_rol UUID NOT NULL REFERENCES rol (id_rol),
   fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE IF EXISTS public.usuario
+ADD CONSTRAINT usuario_documento_identidad_key UNIQUE (documento_identidad);
+
+ALTER TABLE IF EXISTS public.usuario
+ALTER COLUMN documento_identidad
+SET NOT NULL;
