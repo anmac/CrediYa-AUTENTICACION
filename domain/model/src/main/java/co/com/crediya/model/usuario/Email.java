@@ -11,6 +11,7 @@ public record Email(String value) {
       Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
 
   public Email {
+    System.out.println("DEBUG >>> Recibiendo Email: " + value);
     if (value == null || value.isBlank()) {
       throw new IllegalArgumentException("El correo no puede estar vacío");
     }

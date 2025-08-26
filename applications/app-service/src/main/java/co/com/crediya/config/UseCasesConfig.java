@@ -5,10 +5,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 
 @Configuration
-@ComponentScan(basePackages = "co.com.crediya.usecase",
-        includeFilters = {
-                @ComponentScan.Filter(type = FilterType.REGEX, pattern = "^.+UseCase$")
-        },
-        useDefaultFilters = false)
-public class UseCasesConfig {
-}
+@ComponentScan(
+    basePackages = "co.com.crediya.usecase",
+    includeFilters = {
+      @ComponentScan.Filter(type = FilterType.REGEX, pattern = "^.+UseCase$"),
+      @ComponentScan.Filter(type = FilterType.REGEX, pattern = "^.+UseCaseImpl$")
+    },
+    useDefaultFilters = false)
+public class UseCasesConfig {}
