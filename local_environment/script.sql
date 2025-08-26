@@ -29,3 +29,12 @@ ADD CONSTRAINT usuario_documento_identidad_key UNIQUE (documento_identidad);
 ALTER TABLE IF EXISTS public.usuario
 ALTER COLUMN documento_identidad
 SET NOT NULL;
+
+ALTER TABLE IF EXISTS public.usuario
+ALTER COLUMN id_rol
+SET DEFAULT gen_random_uuid();
+
+INSERT INTO
+  public.rol (nombre, descripcion)
+VALUES
+  ('adminisitrador', 'administra el sistema de credito');
