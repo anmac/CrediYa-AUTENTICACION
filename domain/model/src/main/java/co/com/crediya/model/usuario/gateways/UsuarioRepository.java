@@ -2,6 +2,7 @@ package co.com.crediya.model.usuario.gateways;
 
 import co.com.crediya.model.usuario.Usuario;
 import java.util.UUID;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UsuarioRepository {
@@ -13,4 +14,6 @@ public interface UsuarioRepository {
   Mono<Usuario> findByEmail(String email);
 
   Mono<Usuario> findByDocument(String document);
+
+  Flux<Usuario> findAll();
 }

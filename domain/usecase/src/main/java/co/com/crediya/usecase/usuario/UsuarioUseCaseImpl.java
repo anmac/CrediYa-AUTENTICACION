@@ -2,17 +2,29 @@ package co.com.crediya.usecase.usuario;
 
 import co.com.crediya.model.usuario.Usuario;
 import co.com.crediya.model.usuario.gateways.UsuarioRepository;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
-public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
+public class UsuarioUseCaseImpl implements UsuarioUseCase {
 
   private final UsuarioRepository usuarioRepository;
 
   @Override
   public Mono<Usuario> registrar(Usuario usuario) {
     return validarDatos(usuario).then(usuarioRepository.save(usuario));
+  }
+
+  @Override
+  public Mono<Usuario> obtenerUsuario(UUID id) {
+    return usuarioRepository.findById(id);
+  }
+
+  @Override
+  public Flux<Usuario> obtenerUsuarios() {
+    return usuarioRepository.findAll();
   }
 
   private Mono<Void> validarDatos(Usuario usuario) {
