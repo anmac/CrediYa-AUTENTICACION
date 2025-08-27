@@ -1,5 +1,6 @@
 package co.com.crediya.usecase.usuario;
 
+import co.com.crediya.model.role.Roles;
 import co.com.crediya.model.usuario.Usuario;
 import co.com.crediya.model.usuario.gateways.UsuarioRepository;
 import java.util.UUID;
@@ -14,6 +15,10 @@ public class UsuarioUseCaseImpl implements UsuarioUseCase {
 
   @Override
   public Mono<Usuario> registrar(Usuario usuario) {
+    if (usuario.getIdRol() == null) {
+      usuario.setIdRol(Roles.CLIENT.getId());
+    }
+
     return validarDatos(usuario).then(usuarioRepository.save(usuario));
   }
 

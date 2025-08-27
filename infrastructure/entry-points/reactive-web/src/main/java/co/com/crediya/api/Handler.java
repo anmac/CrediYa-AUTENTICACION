@@ -3,6 +3,8 @@ package co.com.crediya.api;
 import co.com.crediya.api.dto.RegistrarUsuarioDTO;
 import co.com.crediya.api.dto.UsuarioResponseDTO;
 import co.com.crediya.usecase.usuario.UsuarioUseCase;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,7 +20,7 @@ import reactor.core.publisher.Mono;
 public class Handler {
 
   private final UsuarioUseCase usuarioUseCase;
-
+  private final Validator validator;
   private final Logger log = LoggerFactory.getLogger(Handler.class);
 
   public Mono<ServerResponse> listenGetUsuarioById(ServerRequest serverRequest) {
@@ -45,13 +47,30 @@ public class Handler {
   public Mono<ServerResponse> listenSaveUsuario(ServerRequest serverRequest) {
     return serverRequest
         .bodyToMono(RegistrarUsuarioDTO.class)
-        .doOnError(Throwable::printStackTrace)
-        .flatMap(dto -> usuarioUseCase.registrar(dto.toDomain()))
+        .flatMap(
+            dto -> {
+              var violations = validator.validate(dto);
+              if (!violations.isEmpty()) {
+                return Mono.error(new ConstraintViolationException(violations));
+              }
+              return Mono.just(dto);
+            })
+        .map(RegistrarUsuarioDTO::toDomain)
+        .flatMap(usuarioUseCase::registrar)
         .flatMap(
             usuarioRegistrado ->
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(UsuarioResponseDTO.fromDomain(usuarioRegistrado)));
+                    .bodyValue(UsuarioResponseDTO.fromDomain(usuarioRegistrado)))
+        .onErrorResume(
+            ConstraintViolationException.class,
+            ex -> {
+              var errors =
+                  ex.getConstraintViolations().stream()
+                      .map(cv -> cv.getPropertyPath() + ": " + cv.getMessage())
+                      .toList();
+              return ServerResponse.badRequest().bodyValue(errors);
+            });
   }
 
   //  public Mono<ServerResponse> listenUpdateUsuario(ServerRequest serverRequest) {
