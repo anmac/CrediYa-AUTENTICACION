@@ -11,6 +11,7 @@ import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 
 @Component
 public class CustomErrorAttributes extends DefaultErrorAttributes {
@@ -26,16 +27,23 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
     String errorCode = "Internal Server Error";
     String message = error.getMessage();
 
-    if (error instanceof BusinessException be) {
-      status = be.getStatus();
-      errorCode = "Business Error";
-      message = be.getMessage();
-    } else if (error instanceof NotFoundException nfe) {
-      status = 404;
-      errorCode = "Not Found";
-      message = nfe.getMessage();
-    } else {
-      log.error("Error inesperado: ", error);
+    switch (error) {
+      case BusinessException be -> {
+        status = be.getStatus();
+        errorCode = "Business Error";
+        message = be.getMessage();
+      }
+      case NotFoundException nfe -> {
+        status = 404;
+        errorCode = "Not Found";
+        message = nfe.getMessage();
+      }
+      case NoResourceFoundException nfe -> {
+        status = 404;
+        errorCode = "Not Found";
+        message = nfe.getMessage();
+      }
+      default -> log.error("Error inesperado: ", error);
     }
     //    if (error instanceof IllegalArgumentException) {
     //      status = 400;
