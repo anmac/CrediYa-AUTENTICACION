@@ -1,5 +1,7 @@
 package co.com.crediya.usecase.usuario;
 
+import co.com.crediya.model.exception.BusinessException;
+import co.com.crediya.model.exception.NotFoundException;
 import co.com.crediya.model.role.Roles;
 import co.com.crediya.model.usuario.Usuario;
 import co.com.crediya.model.usuario.gateways.UsuarioRepository;
@@ -24,7 +26,9 @@ public class UsuarioUseCaseImpl implements UsuarioUseCase {
 
   @Override
   public Mono<Usuario> obtenerUsuario(UUID id) {
-    return usuarioRepository.findById(id);
+    return usuarioRepository
+        .findById(id)
+        .switchIfEmpty(Mono.error(new NotFoundException("Usuario no encontrado con id: " + id)));
   }
 
   @Override
@@ -39,7 +43,7 @@ public class UsuarioUseCaseImpl implements UsuarioUseCase {
             .flatMap(
                 existing ->
                     Mono.<Usuario>error(
-                        new IllegalArgumentException("El correo electrónico ya está registrado")))
+                        new BusinessException("El correo electrónico ya está registrado")))
             .then();
 
     Mono<Void> documentIdCheck =
@@ -48,8 +52,7 @@ public class UsuarioUseCaseImpl implements UsuarioUseCase {
             .flatMap(
                 existing ->
                     Mono.<Usuario>error(
-                        new IllegalArgumentException(
-                            "El documento de identidad ya está registrado")))
+                        new BusinessException("El documento de identidad ya está registrado")))
             .then();
 
     return Mono.when(emailCheck, documentIdCheck);
