@@ -35,7 +35,7 @@ public class UsuarioUseCaseImpl implements UsuarioUseCase {
   private Mono<Void> validarDatos(Usuario usuario) {
     Mono<Void> emailCheck =
         usuarioRepository
-            .findByEmail(String.valueOf(usuario.getCorreoElectronico()))
+            .findByEmail(usuario.getCorreoElectronico().value())
             .flatMap(
                 existing ->
                     Mono.<Usuario>error(
@@ -48,7 +48,8 @@ public class UsuarioUseCaseImpl implements UsuarioUseCase {
             .flatMap(
                 existing ->
                     Mono.<Usuario>error(
-                        new IllegalArgumentException("El documento ya está registrado")))
+                        new IllegalArgumentException(
+                            "El documento de identidad ya está registrado")))
             .then();
 
     return Mono.when(emailCheck, documentIdCheck);

@@ -28,6 +28,8 @@ public class UsuarioRepositoryAdapter
 
   @Override
   public Mono<Usuario> findByDocument(String document) {
-    return repository.findByCorreoElectronico(document).map(this::toEntity);
+    Usuario usuario = new Usuario();
+    usuario.setDocumentoIdentidad(document);
+    return findByExample(usuario).next();
   }
 }
